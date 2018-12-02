@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--suppress AndroidUnknownAttribute -->
     <data class=".OverviewBinding">
 
         <variable
@@ -13,7 +14,8 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="me.arthurnagy.downtime.feature.overview.OverviewFragment">
+        tools:context="me.arthurnagy.downtime.feature.overview.OverviewFragment"
+        tools:ignore="RtlSymmetry">
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
@@ -27,6 +29,137 @@
                 app:title="@string/overview" />
 
         </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideline_start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_begin="@dimen/second_keyline" />
+
+                <androidx.constraintlayout.widget.Guideline
+                    android:id="@+id/guideline_end"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    app:layout_constraintGuide_end="@dimen/second_keyline" />
+
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/overview_chart"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_margin="@dimen/first_keyline"
+                    app:layout_constraintDimensionRatio="H, 1:1"
+                    app:layout_constraintEnd_toEndOf="@id/guideline_end"
+                    app:layout_constraintStart_toStartOf="@id/guideline_start"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/unlock_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/first_keyline"
+                    android:onClick="@{(v) -> viewModel.onUnlocksClicked()}"
+                    android:text="@string/unlocks"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
+                    app:layout_constraintEnd_toStartOf="@+id/notification_label"
+                    app:layout_constraintStart_toStartOf="@id/guideline_start"
+                    app:layout_constraintTop_toBottomOf="@id/overview_chart" />
+
+                <TextView
+                    android:id="@+id/unlock_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(v) -> viewModel.onUnlocksClicked()}"
+                    android:text="@{viewModel.unlocks}"
+                    android:paddingStart="@dimen/first_keyline"
+                    android:paddingEnd="@dimen/first_keyline"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+                    app:layout_constraintEnd_toEndOf="@id/unlock_label"
+                    app:layout_constraintStart_toStartOf="@id/unlock_label"
+                    app:layout_constraintTop_toBottomOf="@id/unlock_label"
+                    tools:text="215" />
+
+                <TextView
+                    android:id="@+id/notification_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/first_keyline"
+                    android:onClick="@{(v) -> viewModel.onNotificationsClicked()}"
+                    android:text="@string/notifications"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
+                    app:layout_constraintEnd_toEndOf="@id/guideline_end"
+                    app:layout_constraintStart_toEndOf="@id/unlock_label"
+                    app:layout_constraintTop_toTopOf="@id/unlock_label" />
+
+                <TextView
+                    android:id="@+id/notification_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{(v) -> viewModel.onNotificationsClicked()}"
+                    android:text="@{viewModel.notifications}"
+                    android:paddingStart="@dimen/first_keyline"
+                    android:paddingEnd="@dimen/first_keyline"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+                    app:layout_constraintEnd_toEndOf="@id/notification_label"
+                    app:layout_constraintStart_toStartOf="@id/notification_label"
+                    app:layout_constraintTop_toBottomOf="@id/notification_label"
+                    tools:text="342" />
+
+                <View
+                    android:id="@+id/divider"
+                    style="@style/Divider"
+                    android:layout_marginTop="@dimen/first_keyline"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/unlock_count" />
+
+                <TextView
+                    android:id="@+id/dashboard"
+                    style="@style/OverviewEntry"
+                    android:onClick="@{(v) -> viewModel.onDashboardClicked()}"
+                    android:text="@string/dashboard"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/divider" />
+
+                <TextView
+                    android:id="@+id/night_light"
+                    style="@style/OverviewEntry"
+                    android:text="@string/night_light"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/dashboard" />
+
+                <TextView
+                    android:id="@+id/do_not_disturb"
+                    style="@style/OverviewEntry"
+                    android:text="@string/do_not_disturb"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/night_light" />
+
+                <TextView
+                    android:id="@+id/manage_notifications"
+                    style="@style/OverviewEntry"
+                    android:text="@string/manage_notifications"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/do_not_disturb" />
+
+                <View
+                    android:id="@+id/divider_two"
+                    style="@style/Divider"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/manage_notifications" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.core.widget.NestedScrollView>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

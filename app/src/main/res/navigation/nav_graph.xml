@@ -7,5 +7,34 @@
     <fragment
         android:id="@+id/overviewFragment"
         android:name="me.arthurnagy.downtime.feature.overview.OverviewFragment"
-        android:label="@string/overview" />
+        android:label="@string/overview">
+        <action
+            android:id="@+id/action_overviewFragment_to_dashboardFragment"
+            app:destination="@+id/dashboardFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_detailFragment"
+            app:destination="@id/detailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="me.arthurnagy.downtime.feature.dashboard.DashboardFragment"
+        android:label="@string/dashboard">
+        <argument
+            android:name="usageType"
+            app:argType="me.arthurnagy.downtime.feature.shared.UsageType" />
+        <action
+            android:id="@+id/action_dashboardFragment_to_detailFragment"
+            app:destination="@id/detailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailFragment"
+        android:name="me.arthurnagy.downtime.feature.detail.DetailFragment"
+        android:label="DetailFragment">
+        <argument
+            android:name="usageType"
+            app:argType="me.arthurnagy.downtime.feature.shared.UsageType" />
+        <argument
+            android:name="appPackageName"
+            app:argType="string" />
+    </fragment>
 </navigation>

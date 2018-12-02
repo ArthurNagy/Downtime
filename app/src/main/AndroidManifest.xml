@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="me.arthurnagy.downtime">
 
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
     <application
         android:name=".DowntimeApp"
         android:allowBackup="true"

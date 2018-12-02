@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: "androidx.navigation.safeargs"
 
 android {
@@ -34,6 +35,10 @@ kapt {
     }
 }
 
+androidExtensions {
+    experimental = true
+}
+
 ext {
     lifecycle = '2.0.0'
     room_version = '2.1.0-alpha02'
@@ -54,6 +59,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
 
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
+
+//    implementation 'com.jakewharton.threetenabp:threetenabp:1.1.1'
 
     // Architecture components
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle"
