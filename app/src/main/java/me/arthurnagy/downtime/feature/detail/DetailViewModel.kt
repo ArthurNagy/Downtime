@@ -1,3 +1,6 @@
 package me.arthurnagy.downtime.feature.detail
 
-class DetailViewModel
+import me.arthurnagy.downtime.core.AppDispatchers
+import me.arthurnagy.downtime.feature.shared.DowntimeViewModel
+
+class DetailViewModel(appDispatchers: AppDispatchers) : DowntimeViewModel(appDispatchers)
