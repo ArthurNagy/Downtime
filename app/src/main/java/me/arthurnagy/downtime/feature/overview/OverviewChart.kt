@@ -4,8 +4,11 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Rect
+import android.text.style.TextAppearanceSpan
 import android.util.AttributeSet
 import androidx.core.content.ContextCompat
+import androidx.core.text.buildSpannedString
+import androidx.core.text.inSpans
 import com.github.mikephil.charting.animation.ChartAnimator
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.Entry
@@ -21,6 +24,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.arthurnagy.downtime.R
 import me.arthurnagy.downtime.core.AppUsage
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.math.*
 
 
@@ -45,7 +50,17 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
     fun submitData(appUsageEntries: List<AppUsage>) {
         GlobalScope.launch(Dispatchers.Main) {
             totalAppScreenTime = appUsageEntries.sumBy { it.screenTime.toInt() }.toLong()
-            centerText = totalAppScreenTime.toString()
+            val timeFormatter = SimpleDateFormat("H 'hr' mm 'min'", Locale.getDefault())
+            val todaySpentTime = Calendar.getInstance().apply { timeInMillis = totalAppScreenTime }
+            centerText = buildSpannedString {
+                inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Headline5)) {
+                    append(timeFormatter.format(todaySpentTime.timeInMillis))
+                }
+                append("\n")
+                inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Body1)) {
+                    append(context.getString(R.string.today))
+                }
+            }
             val pieAppData = withContext(Dispatchers.Default) {
                 val pieEntries: List<PieEntry> = appUsageEntries.map(::transformAppEntryToPieEntry)
                 val sortedEntries = pieEntries.sortedByDescending { it.value }
