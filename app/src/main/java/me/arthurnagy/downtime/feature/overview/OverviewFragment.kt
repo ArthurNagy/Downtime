@@ -5,8 +5,10 @@ import android.os.Bundle
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
+import com.anychart.AnyChart
 import me.arthurnagy.downtime.OverviewBinding
 import me.arthurnagy.downtime.R
+import me.arthurnagy.downtime.core.AppUsage
 import me.arthurnagy.downtime.feature.shared.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -28,9 +30,7 @@ class OverviewFragment : DowntimeFragment<OverviewBinding, OverviewViewModel>() 
                 }.exhaustive
             }
         }
-        viewModel.appEntries.observeNonNull(viewLifecycleOwner) {
-            binding.overviewChart.submitData(it)
-        }
+        viewModel.appEntries.observeNonNull(viewLifecycleOwner, ::updateChart)
     }
 
     override fun onResume() {
@@ -43,6 +43,12 @@ class OverviewFragment : DowntimeFragment<OverviewBinding, OverviewViewModel>() 
         setupNightLight()
         setupDoNotDisturb()
         setupManageAppNotifications()
+    }
+
+    private fun updateChart(appUsageList: List<AppUsage>) {
+        val overviewChart = AnyChart.pie()
+
+        overviewChart.radius()
     }
 
     private fun setupNightLight() {

@@ -53,7 +53,7 @@
                     android:orientation="vertical"
                     app:layout_constraintGuide_end="@dimen/second_keyline" />
 
-                <me.arthurnagy.downtime.feature.overview.OverviewChart
+                <com.anychart.AnyChartView
                     android:id="@+id/overview_chart"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
@@ -61,6 +61,15 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <!--<me.arthurnagy.downtime.feature.overview.OverviewChart-->
+                <!--android:id="@+id/overview_chart"-->
+                <!--android:layout_width="0dp"-->
+                <!--android:layout_height="0dp"-->
+                <!--app:layout_constraintDimensionRatio="H, 1:0.85"-->
+                <!--app:layout_constraintEnd_toEndOf="parent"-->
+                <!--app:layout_constraintStart_toStartOf="parent"-->
+                <!--app:layout_constraintTop_toTopOf="parent" />-->
 
                 <TextView
                     android:id="@+id/unlock_label"

@@ -60,6 +60,8 @@ dependencies {
 
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
 
+    implementation 'com.github.AnyChart:AnyChart-Android:1.0.6'
+
     implementation 'com.jakewharton.threetenabp:threetenabp:1.1.1'
 
     // Architecture components

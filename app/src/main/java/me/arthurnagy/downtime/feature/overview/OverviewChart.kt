@@ -23,7 +23,6 @@ import me.arthurnagy.downtime.R
 import me.arthurnagy.downtime.core.AppUsage
 import kotlin.math.*
 
-
 class OverviewChart @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) : PieChart(context, attrs, defStyle) {
 
     private var totalAppScreenTime = 0L
