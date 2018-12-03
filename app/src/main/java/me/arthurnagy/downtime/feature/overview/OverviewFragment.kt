@@ -7,12 +7,7 @@ import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
 import me.arthurnagy.downtime.OverviewBinding
 import me.arthurnagy.downtime.R
-import me.arthurnagy.downtime.feature.shared.DowntimeFragment
-import me.arthurnagy.downtime.feature.shared.UsageType
-import me.arthurnagy.downtime.feature.shared.binding
-import me.arthurnagy.downtime.feature.shared.exhaustive
-import me.arthurnagy.downtime.feature.shared.observe
-import me.arthurnagy.downtime.feature.shared.requireAppCompatActivity
+import me.arthurnagy.downtime.feature.shared.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class OverviewFragment : DowntimeFragment<OverviewBinding, OverviewViewModel>() {
@@ -32,6 +27,9 @@ class OverviewFragment : DowntimeFragment<OverviewBinding, OverviewViewModel>() 
                     )
                 }.exhaustive
             }
+        }
+        viewModel.appEntries.observeNonNull(viewLifecycleOwner) {
+            binding.overviewChart.submitData(it)
         }
     }
 
@@ -91,4 +89,5 @@ class OverviewFragment : DowntimeFragment<OverviewBinding, OverviewViewModel>() 
     }
 
     override fun provideToolbar(): Toolbar = binding.toolbar
+
 }

@@ -53,21 +53,19 @@
                     android:orientation="vertical"
                     app:layout_constraintGuide_end="@dimen/second_keyline" />
 
-                <com.github.mikephil.charting.charts.PieChart
+                <me.arthurnagy.downtime.feature.overview.OverviewChart
                     android:id="@+id/overview_chart"
                     android:layout_width="0dp"
                     android:layout_height="0dp"
-                    android:layout_margin="@dimen/first_keyline"
-                    app:layout_constraintDimensionRatio="H, 1:1"
-                    app:layout_constraintEnd_toEndOf="@id/guideline_end"
-                    app:layout_constraintStart_toStartOf="@id/guideline_start"
+                    app:layout_constraintDimensionRatio="H, 1:0.85"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/unlock_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/first_keyline"
                     android:onClick="@{(v) -> viewModel.onUnlocksClicked()}"
                     android:text="@string/unlocks"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle2"
@@ -80,9 +78,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="@{(v) -> viewModel.onUnlocksClicked()}"
-                    android:text="@{viewModel.unlocks}"
                     android:paddingStart="@dimen/first_keyline"
                     android:paddingEnd="@dimen/first_keyline"
+                    android:text="@{viewModel.unlocks}"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
                     app:layout_constraintEnd_toEndOf="@id/unlock_label"
                     app:layout_constraintStart_toStartOf="@id/unlock_label"
@@ -106,9 +104,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:onClick="@{(v) -> viewModel.onNotificationsClicked()}"
-                    android:text="@{viewModel.notifications}"
                     android:paddingStart="@dimen/first_keyline"
                     android:paddingEnd="@dimen/first_keyline"
+                    android:text="@{viewModel.notifications}"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
                     app:layout_constraintEnd_toEndOf="@id/notification_label"
                     app:layout_constraintStart_toStartOf="@id/notification_label"

@@ -28,4 +28,10 @@ inline fun <T> LiveData<T>.observe(lifecycleOwner: LifecycleOwner, crossinline o
     })
 }
 
+inline fun <T> LiveData<T>.observeNonNull(lifecycleOwner: LifecycleOwner, crossinline observer: (T) -> Unit) {
+    this.observe(lifecycleOwner, androidx.lifecycle.Observer { data ->
+        data?.let { observer(it) }
+    })
+}
+
 fun <T> mutableLiveDataOf(initialValue: T?) = MutableLiveData<T>().apply { value = initialValue }

@@ -2,13 +2,15 @@ package me.arthurnagy.downtime.core
 
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
+import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresApi
+import me.arthurnagy.downtime.BuildConfig
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class StatsRepository(private val usageStatsManager: UsageStatsManager) {
+class StatsRepository(private val usageStatsManager: UsageStatsManager, private val packageManager: PackageManager) {
 
     private val startTimeToday: Long
     private val endTimeToday: Long
@@ -26,31 +28,48 @@ class StatsRepository(private val usageStatsManager: UsageStatsManager) {
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    suspend fun getTodaysUnlockCount() = suspendCoroutine<Int> {
-        val usageEvents = usageStatsManager.queryEvents(startTimeToday, endTimeToday)
-        var count = 0
-        while (usageEvents.hasNextEvent()) {
-            val event = UsageEvents.Event()
-            usageEvents.getNextEvent(event)
-            if (event.eventType == UsageEvents.Event.KEYGUARD_HIDDEN) {
-                count++
-            }
-        }
-        it.resume(count)
+    suspend fun getTodaysUnlockCount() = suspendCoroutine<Int> { continuation ->
+        val count = usageStatsManager.queryEvents(startTimeToday, endTimeToday)
+            .events
+            .asSequence()
+            .filter { it.eventType == UsageEvents.Event.KEYGUARD_HIDDEN }
+            .count()
+        continuation.resume(count)
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
-    suspend fun getTodaysNotificationCount() = suspendCoroutine<Int> {
-        val usageEvents = usageStatsManager.queryEvents(startTimeToday, endTimeToday)
-        var count = 0
-        while (usageEvents.hasNextEvent()) {
-            val event = UsageEvents.Event()
-            usageEvents.getNextEvent(event)
-            if (event.eventType == 12 && event.packageName != "android") {// UsageEvents.Event.NOTIFICATION_INTERRUPTION
-                count++
+    suspend fun getTodaysNotificationCount() = suspendCoroutine<Int> { continuation ->
+        val count = usageStatsManager.queryEvents(startTimeToday, endTimeToday)
+            .events
+            .asSequence()
+            .filter { it.eventType == EVENT_TYPE_NOTIFICATION_INTERRUPTION && it.packageName != ANDROID_NOTIFICATIONS_PACKAGE }
+            .count()
+        continuation.resume(count)
+    }
+
+    suspend fun getTodaysAppUsage() = suspendCoroutine<List<AppUsage>> { continuation ->
+        val appUsageList = usageStatsManager.queryAndAggregateUsageStats(startTimeToday, endTimeToday)
+            .filter { !it.key.contains(BuildConfig.APPLICATION_ID) && !it.key.contains("launcher") && it.value.lastTimeUsed > startTimeToday }
+            .map { (key, entry) ->
+                val appInfo = packageManager.getApplicationInfo(key, PackageManager.GET_META_DATA)
+                val appNotificationsCount = usageStatsManager.queryEvents(startTimeToday, endTimeToday)
+                    .events
+                    .filter { it.packageName == key && it.eventType == EVENT_TYPE_NOTIFICATION_INTERRUPTION }
+                    .count()
+                AppUsage(
+                    name = packageManager.getApplicationLabel(appInfo).toString(),
+                    packageName = key,
+                    screenTime = entry.totalTimeInForeground,
+                    timesOpened = entry.appLaunchCount,
+                    notificationsReceived = appNotificationsCount
+                )
             }
-        }
-        it.resume(count)
+        continuation.resume(appUsageList)
+    }
+
+    companion object {
+        private const val EVENT_TYPE_NOTIFICATION_INTERRUPTION = 12
+        private const val ANDROID_NOTIFICATIONS_PACKAGE = "android"
     }
 
 }
