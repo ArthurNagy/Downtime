@@ -5,12 +5,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.text.style.TextAppearanceSpan
 import android.util.AttributeSet
-import android.util.Log
+import android.view.MotionEvent
 import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import com.github.mikephil.charting.animation.ChartAnimator
-import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.PieData
@@ -19,6 +18,7 @@ import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IValueFormatter
 import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
+import com.github.mikephil.charting.listener.PieRadarChartTouchListener
 import com.github.mikephil.charting.renderer.PieChartRenderer
 import com.github.mikephil.charting.utils.ViewPortHandler
 import kotlinx.coroutines.*
@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.CoroutineContext
 
+typealias OverviewAppSelectionListener = (selectedApp: AppUsage?) -> Unit
 
 class OverviewChart @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) :
     PieChart(context, attrs, defStyle), CoroutineScope {
@@ -35,11 +36,13 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
     private var job = Job()
     private var totalAppScreenTime = 0L
     private val appPrimaryColor = ContextCompat.getColor(context, R.color.primary)
+    private var appSelectionListener: OverviewAppSelectionListener? = null
 
     override val coroutineContext: CoroutineContext get() = Dispatchers.Main + job
 
     init {
         renderer = OverviewChartRenderer(this, mAnimator, mViewPortHandler)
+        onTouchListener = OverviewChartTouchListener(this)
 
         setUsePercentValues(false)
         description.isEnabled = false
@@ -58,11 +61,12 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
 
         setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
             override fun onNothingSelected() {
-                Log.d("OverviewChart", "onNothingSelected")
+                appSelectionListener?.invoke(null)
             }
 
             override fun onValueSelected(e: Entry, h: Highlight) {
-                Log.d("OverviewChart", "onValueSelected: entry: ${e.x} ${e.data}, highlight: $h")
+                val appUsage: AppUsage? = e.data as? AppUsage
+                appSelectionListener?.invoke(appUsage)
             }
         })
 
@@ -122,8 +126,12 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
             }
             data = PieData(pieAppData)
             highlightValue(null)
-            animateY(400, Easing.EaseInOutQuad)
+            invalidate()
         }
+    }
+
+    fun setAppSelectionListener(appSelectionListener: OverviewAppSelectionListener) {
+        this.appSelectionListener = appSelectionListener
     }
 
     private fun transformAppEntryToPieEntry(appEntry: AppUsage): PieEntry {
@@ -137,7 +145,39 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
         PieChartRenderer(pieChart, chartAnimator, viewPortHandler) {
 
         override fun drawValue(c: Canvas?, formatter: IValueFormatter?, value: Float, entry: Entry?, dataSetIndex: Int, x: Float, y: Float, color: Int) = Unit
+    }
 
+    private class OverviewChartTouchListener(private val chart: PieChart) : PieRadarChartTouchListener(chart) {
+
+        private val chartDistanceThreshold = chart.context.resources.getDimensionPixelSize(R.dimen.chart_offset)
+
+        override fun onSingleTapUp(e: MotionEvent): Boolean {
+            val tapDistance = chart.distanceToCenter(e.x, e.y)
+            val holeDistance = chart.radius * (chart.holeRadius - 25F) / 100F
+            return when {
+                tapDistance < holeDistance -> {
+                    chart.highlightValue(null, true)
+                    mLastGesture = null
+                    true
+                }
+                tapDistance > chart.radius && tapDistance <= chart.radius + chartDistanceThreshold -> {
+                    val angle = chart.getAngleForPoint(e.x, e.y) / chart.animator.phaseY
+                    val index = chart.getIndexForAngle(angle)
+                    // check if the index could be found
+                    return if (index < 0 || index >= chart.data.maxEntryCountSet.entryCount) {
+                        super.onSingleTapUp(e)
+                    } else {
+                        val set = chart.data.dataSet
+                        val entry = set.getEntryForIndex(index)
+                        val highlight = Highlight(index.toFloat(), entry.y, e.x, e.y, 0, set.axisDependency)
+                        chart.highlightValue(highlight, true)
+                        mLastGesture = ChartGesture.SINGLE_TAP
+                        true
+                    }
+                }
+                else -> super.onSingleTapUp(e)
+            }
+        }
     }
 
     companion object {

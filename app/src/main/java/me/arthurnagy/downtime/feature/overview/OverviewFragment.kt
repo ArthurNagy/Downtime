@@ -16,6 +16,14 @@ class OverviewFragment : DowntimeFragment<OverviewBinding, OverviewViewModel>() 
     override val viewModel: OverviewViewModel by viewModel()
 
     override fun onCreateView() {
+        binding.overviewChart.setAppSelectionListener { selectedApp ->
+            if (selectedApp == null) {
+                findNavController().navigate(OverviewFragmentDirections.actionOverviewFragmentToDashboardFragment(UsageType.SOT))
+            } else {
+                findNavController().navigate(OverviewFragmentDirections.actionOverviewFragmentToDetailFragment(UsageType.SOT, selectedApp.packageName))
+            }
+        }
+
         viewModel.event.observe(viewLifecycleOwner) { event ->
             event?.consume()?.let {
                 when (it) {

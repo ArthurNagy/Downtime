@@ -4,4 +4,5 @@
     <dimen name="second_keyline">24dp</dimen>
     <dimen name="third_keyline">72dp</dimen>
     <dimen name="min_touch_target">48dp</dimen>
+    <dimen name="chart_offset">40dp</dimen>
 </resources>
