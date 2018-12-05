@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresApi
 import me.arthurnagy.downtime.BuildConfig
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -25,6 +26,10 @@ class StatsRepository(private val usageStatsManager: UsageStatsManager, private 
         endTimeToday = calendar.timeInMillis
         calendar.add(Calendar.DAY_OF_MONTH, -1)
         startTimeToday = calendar.timeInMillis
+        val today = Date(startTimeToday)
+        val tomorrow = Date(endTimeToday)
+        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault(Locale.Category.FORMAT))
+        println("LOFASZ: today: ${formatter.format(today)} tomorrow: ${formatter.format(tomorrow)}")
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -49,7 +54,7 @@ class StatsRepository(private val usageStatsManager: UsageStatsManager, private 
 
     suspend fun getTodaysAppUsage() = suspendCoroutine<List<AppUsage>> { continuation ->
         val appUsageList = usageStatsManager.queryAndAggregateUsageStats(startTimeToday, endTimeToday)
-            .filter { !it.key.contains(BuildConfig.APPLICATION_ID) && !it.key.contains("launcher") && it.value.lastTimeUsed > startTimeToday }
+            .filter { !isThisApp(it.key) && !isExcludedSystemApp(it.key) && it.value.lastTimeUsed > startTimeToday }
             .map { (key, entry) ->
                 val appInfo = packageManager.getApplicationInfo(key, PackageManager.GET_META_DATA)
                 val appNotificationsCount = usageStatsManager.queryEvents(startTimeToday, endTimeToday)
@@ -66,6 +71,10 @@ class StatsRepository(private val usageStatsManager: UsageStatsManager, private 
             }
         continuation.resume(appUsageList)
     }
+
+    private fun isThisApp(packageName: String) = packageName.contains(BuildConfig.APPLICATION_ID)
+
+    private fun isExcludedSystemApp(packageName: String) = packageName.contains("launcher") || packageName.contains("systemui")
 
     companion object {
         private const val EVENT_TYPE_NOTIFICATION_INTERRUPTION = 12
