@@ -3,52 +3,87 @@ package me.arthurnagy.downtime.feature.overview
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Rect
 import android.text.style.TextAppearanceSpan
 import android.util.AttributeSet
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import androidx.core.text.inSpans
 import com.github.mikephil.charting.animation.ChartAnimator
+import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IValueFormatter
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.renderer.PieChartRenderer
 import com.github.mikephil.charting.utils.ViewPortHandler
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import me.arthurnagy.downtime.R
 import me.arthurnagy.downtime.core.AppUsage
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.*
+import kotlin.coroutines.CoroutineContext
 
 
-class OverviewChart @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) : PieChart(context, attrs, defStyle) {
+class OverviewChart @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) :
+    PieChart(context, attrs, defStyle), CoroutineScope {
 
+    private var job = Job()
     private var totalAppScreenTime = 0L
+    private val appPrimaryColor = ContextCompat.getColor(context, R.color.primary)
+
+    override val coroutineContext: CoroutineContext get() = Dispatchers.Main + job
 
     init {
         renderer = OverviewChartRenderer(this, mAnimator, mViewPortHandler)
-        isRotationEnabled = false
-        setNoDataText("")
-        holeRadius = 95F
-        setDrawSlicesUnderHole(false)
-        setHoleColor(ContextCompat.getColor(context, R.color.primary))
-        legend.isEnabled = false
-        description.text = ""
+
         setUsePercentValues(false)
+        description.isEnabled = false
         setExtraOffsets(40F, 0F, 40F, 0F)
-        setEntryLabelTextSize(14F)
+
+        isDrawHoleEnabled = true
+        setHoleColor(appPrimaryColor)
+        setDrawSlicesUnderHole(true)
+
+        holeRadius = 95f
+
+        setDrawCenterText(true)
+
+        isRotationEnabled = false
+        isHighlightPerTapEnabled = true
+
+        setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+            override fun onNothingSelected() {
+                Log.d("OverviewChart", "onNothingSelected")
+            }
+
+            override fun onValueSelected(e: Entry, h: Highlight) {
+                Log.d("OverviewChart", "onValueSelected: entry: ${e.x} ${e.data}, highlight: $h")
+            }
+        })
+
+        legend.isEnabled = false
+
+        setNoDataText("")
+        description.isEnabled = false
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        job = Job()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        job.cancel()
     }
 
     fun submitData(appUsageEntries: List<AppUsage>) {
-        GlobalScope.launch(Dispatchers.Main) {
+        launch {
             totalAppScreenTime = appUsageEntries.sumBy { it.screenTime.toInt() }.toLong()
             val timeFormatter = SimpleDateFormat("H 'hr' mm 'min'", Locale.getDefault())
             val todaySpentTime = Calendar.getInstance().apply { timeInMillis = totalAppScreenTime }
@@ -78,11 +113,16 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
                     .apply {
                         colors = MATERIAL_COLORS.toList()
                         sliceSpace = 1F
+                        selectionShift = 1F
+                        xValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+                        valueLineColor = Color.TRANSPARENT
+                        valueLinePart1Length = 0.1F
+                        valueLinePart2Length = 0.1F
                     }
             }
-            mSelectionListener
             data = PieData(pieAppData)
-            invalidate()
+            highlightValue(null)
+            animateY(400, Easing.EaseInOutQuad)
         }
     }
 
@@ -97,22 +137,6 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
         PieChartRenderer(pieChart, chartAnimator, viewPortHandler) {
 
         override fun drawValue(c: Canvas?, formatter: IValueFormatter?, value: Float, entry: Entry?, dataSetIndex: Int, x: Float, y: Float, color: Int) = Unit
-
-        override fun drawEntryLabel(c: Canvas, label: String, x: Float, y: Float) {
-            val textBounds = Rect()
-            paintEntryLabels.getTextBounds(label, 0, label.length, textBounds)
-            val center = mChart.centerOffsets
-            val entryAngleRadian = mChart.getAngleForPoint(x, y) * PI / 180F
-
-            val circleX = center.x + mChart.radius * cos(entryAngleRadian)
-            val circleY = center.y + mChart.radius * sin(entryAngleRadian)
-
-            val distance = sqrt((x - circleX).pow(2) + (y - circleY).pow(2))
-
-            val newX = center.x + (mChart.radius + textBounds.width() / 1.75 + distance) * cos(entryAngleRadian)
-            val newY = center.y + (mChart.radius + textBounds.height() * 1.25 + distance) * sin(entryAngleRadian)
-            super.drawEntryLabel(c, label, newX.toFloat(), newY.toFloat())
-        }
 
     }
 
