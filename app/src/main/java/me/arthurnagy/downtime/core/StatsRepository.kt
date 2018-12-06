@@ -3,36 +3,18 @@ package me.arthurnagy.downtime.core
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.pm.PackageManager
-import android.os.Build
-import androidx.annotation.RequiresApi
 import me.arthurnagy.downtime.BuildConfig
-import java.text.SimpleDateFormat
-import java.util.*
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.temporal.ChronoUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class StatsRepository(private val usageStatsManager: UsageStatsManager, private val packageManager: PackageManager) {
 
-    private val startTimeToday: Long
-    private val endTimeToday: Long
+    private val todayDateTime: LocalDateTime by lazy { LocalDateTime.now() }
+    private val startTimeToday: Long by lazy { todayDateTime.truncatedTo(ChronoUnit.DAYS).toUtcMillis() }
+    private val endTimeToday: Long by lazy { todayDateTime.plusDays(1).truncatedTo(ChronoUnit.DAYS).toUtcMillis() }
 
-    init {
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_MONTH, 1)
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        endTimeToday = calendar.timeInMillis
-        calendar.add(Calendar.DAY_OF_MONTH, -1)
-        startTimeToday = calendar.timeInMillis
-        val today = Date(startTimeToday)
-        val tomorrow = Date(endTimeToday)
-        val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.getDefault(Locale.Category.FORMAT))
-        println("LOFASZ: today: ${formatter.format(today)} tomorrow: ${formatter.format(tomorrow)}")
-    }
-
-    @RequiresApi(Build.VERSION_CODES.P)
     suspend fun getTodaysUnlockCount() = suspendCoroutine<Int> { continuation ->
         val count = usageStatsManager.queryEvents(startTimeToday, endTimeToday)
             .events
@@ -42,7 +24,6 @@ class StatsRepository(private val usageStatsManager: UsageStatsManager, private 
         continuation.resume(count)
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
     suspend fun getTodaysNotificationCount() = suspendCoroutine<Int> { continuation ->
         val count = usageStatsManager.queryEvents(startTimeToday, endTimeToday)
             .events

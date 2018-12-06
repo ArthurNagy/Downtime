@@ -2,6 +2,8 @@ package me.arthurnagy.downtime.core
 
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStats
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZoneOffset
 
 val UsageStats.appLaunchCount: Int
     get() = try {
@@ -24,3 +26,5 @@ val UsageEvents.events: Iterable<UsageEvents.Event>
 
         }
     }
+
+fun LocalDateTime.toUtcMillis() = this.toInstant(ZoneOffset.UTC).toEpochMilli()

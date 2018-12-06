@@ -24,8 +24,9 @@ import com.github.mikephil.charting.utils.ViewPortHandler
 import kotlinx.coroutines.*
 import me.arthurnagy.downtime.R
 import me.arthurnagy.downtime.core.AppUsage
-import java.text.SimpleDateFormat
-import java.util.*
+import org.threeten.bp.Duration
+import org.threeten.bp.LocalTime
+import org.threeten.bp.format.DateTimeFormatter
 import kotlin.coroutines.CoroutineContext
 
 typealias OverviewAppSelectionListener = (selectedApp: AppUsage?) -> Unit
@@ -33,7 +34,7 @@ typealias OverviewAppSelectionListener = (selectedApp: AppUsage?) -> Unit
 class OverviewChart @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) :
     PieChart(context, attrs, defStyle), CoroutineScope {
 
-    private var job = Job()
+    private var job = SupervisorJob()
     private var totalAppScreenTime = 0L
     private val appPrimaryColor = ContextCompat.getColor(context, R.color.primary)
     private var appSelectionListener: OverviewAppSelectionListener? = null
@@ -76,24 +77,19 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
         description.isEnabled = false
     }
 
-    override fun onAttachedToWindow() {
-        super.onAttachedToWindow()
-        job = Job()
-    }
-
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        job.cancel()
+        coroutineContext.cancelChildren()
     }
 
     fun submitData(appUsageEntries: List<AppUsage>) {
         launch {
             totalAppScreenTime = appUsageEntries.sumBy { it.screenTime.toInt() }.toLong()
-            val timeFormatter = SimpleDateFormat("H 'hr' mm 'min'", Locale.getDefault())
-            val todaySpentTime = Calendar.getInstance().apply { timeInMillis = totalAppScreenTime }
+            val appScreenDuration = Duration.ofMillis(totalAppScreenTime)
+            val formatter = DateTimeFormatter.ofPattern("H 'hr' mm 'min'")
             centerText = buildSpannedString {
                 inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Headline5)) {
-                    append(timeFormatter.format(todaySpentTime.timeInMillis))
+                    append(LocalTime.MIDNIGHT.plus(appScreenDuration).format(formatter))
                 }
                 append("\n")
                 inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Body1)) {
