@@ -9,4 +9,5 @@
     <string name="manage_notifications">Manage notifications</string>
     <string name="other">Other</string>
     <string name="today">Today</string>
+    <string name="less_then_one_minute"><![CDATA[< then 1 minute]]></string>
 </resources>

@@ -26,6 +26,7 @@ import me.arthurnagy.downtime.R
 import me.arthurnagy.downtime.core.AppUsage
 import org.threeten.bp.Duration
 import org.threeten.bp.LocalTime
+import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
 import kotlin.coroutines.CoroutineContext
 
@@ -35,7 +36,6 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
     PieChart(context, attrs, defStyle), CoroutineScope {
 
     private var job = SupervisorJob()
-    private var totalAppScreenTime = 0L
     private val appPrimaryColor = ContextCompat.getColor(context, R.color.primary)
     private var appSelectionListener: OverviewAppSelectionListener? = null
 
@@ -47,7 +47,7 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
 
         setUsePercentValues(false)
         description.isEnabled = false
-        setExtraOffsets(40F, 0F, 40F, 0F)
+        setExtraOffsets(42F, 0F, 42F, 0F)
 
         isDrawHoleEnabled = true
         setHoleColor(appPrimaryColor)
@@ -84,20 +84,10 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
 
     fun submitData(appUsageEntries: List<AppUsage>) {
         launch {
-            totalAppScreenTime = appUsageEntries.sumBy { it.screenTime.toInt() }.toLong()
-            val appScreenDuration = Duration.ofMillis(totalAppScreenTime)
-            val formatter = DateTimeFormatter.ofPattern("H 'hr' mm 'min'")
-            centerText = buildSpannedString {
-                inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Headline5)) {
-                    append(LocalTime.MIDNIGHT.plus(appScreenDuration).format(formatter))
-                }
-                append("\n")
-                inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Body1)) {
-                    append(context.getString(R.string.today))
-                }
-            }
+            val totalAppScreenTime = appUsageEntries.sumBy { it.screenTime.toInt() }.toLong()
+            displayCenterText(totalAppScreenTime)
             val pieAppData = withContext(Dispatchers.Default) {
-                val pieEntries: List<PieEntry> = appUsageEntries.map(::transformAppEntryToPieEntry)
+                val pieEntries: List<PieEntry> = appUsageEntries.map { transformAppEntryToPieEntry(it, totalAppScreenTime) }
                 val sortedEntries = pieEntries.sortedByDescending { it.value }
                 val entriesToShow = sortedEntries.filter { it.value > FIVE_PERCENT }
                 val entriesToHide = sortedEntries.filter { it.value <= FIVE_PERCENT }
@@ -126,16 +116,43 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
         }
     }
 
+    private fun displayCenterText(totalAppScreenTime: Long = 0) {
+        val duration = Duration.ofMillis(totalAppScreenTime)
+        val formatter: DateTimeFormatter = if (duration.toHours() > 1) {
+            DateTimeFormatter.ofPattern("H 'hr' mm 'min'")
+        } else {
+            DateTimeFormatter.ofPattern("mm 'minutes'")
+        }
+        centerText = buildSpannedString {
+            inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Headline5)) {
+                append(
+                    when {
+                        duration.toMinutes() > 1 -> {
+                            val appScreenDuration = LocalTime.MIDNIGHT.plus(duration).atOffset(ZoneOffset.UTC)
+                            formatter.format(appScreenDuration)
+                        }
+                        duration.toMillis() > 0 -> context.getString(R.string.less_then_one_minute)
+                        else -> ""
+                    }
+                )
+            }
+            append("\n")
+            inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Body1)) {
+                append(context.getString(R.string.today))
+            }
+        }
+    }
+
     fun setAppSelectionListener(appSelectionListener: OverviewAppSelectionListener) {
         this.appSelectionListener = appSelectionListener
     }
 
-    private fun transformAppEntryToPieEntry(appEntry: AppUsage): PieEntry {
-        val appScreenTimePercentage = calculateAppPercentage(appEntry.screenTime)
+    private fun transformAppEntryToPieEntry(appEntry: AppUsage, totalAppScreenTime: Long): PieEntry {
+        val appScreenTimePercentage = calculateAppPercentage(appEntry.screenTime, totalAppScreenTime)
         return PieEntry(appScreenTimePercentage, appEntry.name, appEntry)
     }
 
-    private fun calculateAppPercentage(appScreenTime: Long) = appScreenTime * 100F / totalAppScreenTime
+    private fun calculateAppPercentage(appScreenTime: Long, totalAppScreenTime: Long) = appScreenTime * 100F / totalAppScreenTime
 
     private class OverviewChartRenderer(pieChart: PieChart, chartAnimator: ChartAnimator, viewPortHandler: ViewPortHandler) :
         PieChartRenderer(pieChart, chartAnimator, viewPortHandler) {
@@ -149,7 +166,7 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
 
         override fun onSingleTapUp(e: MotionEvent): Boolean {
             val tapDistance = chart.distanceToCenter(e.x, e.y)
-            val holeDistance = chart.radius * (chart.holeRadius - 25F) / 100F
+            val holeDistance = chart.radius * (chart.holeRadius - HOLE_INSIDE_PERCENT) / TOTAL_RADIUS_PERCENT
             return when {
                 tapDistance < holeDistance -> {
                     chart.highlightValue(null, true)
@@ -179,6 +196,8 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
     companion object {
         private const val FIVE_PERCENT = 5F
         private const val MAX_CHART_ENTRIES = 10
+        private const val TOTAL_RADIUS_PERCENT = 100F
+        private const val HOLE_INSIDE_PERCENT = 25F
         private val MATERIAL_COLORS = intArrayOf(
             Color.parseColor("#2196F3"), Color.parseColor("#F44336"), Color.parseColor("#FFC107"),
             Color.parseColor("#4CAF50"), Color.parseColor("#9C27B0"), Color.parseColor("#009688"),
