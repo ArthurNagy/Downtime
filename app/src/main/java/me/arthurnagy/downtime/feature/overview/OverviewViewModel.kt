@@ -35,7 +35,7 @@ class OverviewViewModel(dispatchers: AppDispatchers, private val statsRepository
     }
 
     fun onUnlocksClicked() {
-        _event.value = Event(Overview.Dashboard(UsageType.UNLOCKS))
+        _event.value = Event(Overview.Dashboard(UsageType.UNLOCKS_OPENS))
     }
 
     fun onNotificationsClicked() {

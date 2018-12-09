@@ -21,13 +21,16 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.listener.PieRadarChartTouchListener
 import com.github.mikephil.charting.renderer.PieChartRenderer
 import com.github.mikephil.charting.utils.ViewPortHandler
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.arthurnagy.downtime.R
 import me.arthurnagy.downtime.core.AppUsage
-import org.threeten.bp.Duration
-import org.threeten.bp.LocalTime
-import org.threeten.bp.ZoneOffset
-import org.threeten.bp.format.DateTimeFormatter
+import me.arthurnagy.downtime.core.formatToDuration
+import me.arthurnagy.downtime.feature.shared.StringProvider
 import kotlin.coroutines.CoroutineContext
 
 typealias OverviewAppSelectionListener = (selectedApp: AppUsage?) -> Unit
@@ -117,24 +120,9 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
     }
 
     private fun displayCenterText(totalAppScreenTime: Long = 0) {
-        val duration = Duration.ofMillis(totalAppScreenTime)
-        val formatter: DateTimeFormatter = if (duration.toHours() > 1) {
-            DateTimeFormatter.ofPattern("H 'hr' mm 'min'")
-        } else {
-            DateTimeFormatter.ofPattern("mm 'minutes'")
-        }
         centerText = buildSpannedString {
             inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Headline5)) {
-                append(
-                    when {
-                        duration.toMinutes() > 1 -> {
-                            val appScreenDuration = LocalTime.MIDNIGHT.plus(duration).atOffset(ZoneOffset.UTC)
-                            formatter.format(appScreenDuration)
-                        }
-                        duration.toMillis() > 0 -> context.getString(R.string.less_then_one_minute)
-                        else -> ""
-                    }
-                )
+                append(totalAppScreenTime.formatToDuration(StringProvider(context)))
             }
             append("\n")
             inSpans(TextAppearanceSpan(context, R.style.TextAppearance_MaterialComponents_Body1)) {

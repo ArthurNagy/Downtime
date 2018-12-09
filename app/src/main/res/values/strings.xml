@@ -9,5 +9,13 @@
     <string name="manage_notifications">Manage notifications</string>
     <string name="other">Other</string>
     <string name="today">Today</string>
+
     <string name="less_then_one_minute"><![CDATA[< then 1 minute]]></string>
+
+    <string name="pattern_hours" translatable="false">H\'hr\' mm\'min\'</string>
+    <string name="pattern_minutes" translatable="false">mm \'minutes\'</string>
+    <string name="app_opened_count">Opened %1$d times</string>
+    <string name="app_notifications_count">%1$d notifications received</string>
+    <string name="content_desc_app_icon">App Icon</string>
+
 </resources>

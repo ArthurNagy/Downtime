@@ -6,6 +6,6 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 enum class UsageType : Parcelable {
     SOT,
-    UNLOCKS,
+    UNLOCKS_OPENS,
     NOTIFICATIONS
 }
