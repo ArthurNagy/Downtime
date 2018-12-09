@@ -51,7 +51,7 @@ class StatsRepository(private val usageStatsManager: UsageStatsManager, private 
             packageName = usageStats.key,
             icon = packageManager.getApplicationIcon(appInfo),
             screenTime = usageStats.value.totalTimeInForeground,
-            timesOpened = usageStats.value.appLaunchCount,
+            timesOpened = usageStats.value.appOpenedCount,
             notificationsReceived = appNotificationsCount
         )
     }

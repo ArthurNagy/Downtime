@@ -17,8 +17,8 @@ class AppUiModel(private val stringProvider: StringProvider) {
         val appUsage = this.appUsage.get()
         when (usageType) {
             UsageType.SOT -> appUsage?.screenTime?.formatToDuration(stringProvider)
-            UsageType.UNLOCKS_OPENS -> stringProvider.getString(R.string.app_opened_count, appUsage?.timesOpened ?: 0)
-            UsageType.NOTIFICATIONS -> stringProvider.getString(R.string.app_notifications_count, appUsage?.notificationsReceived ?: 0)
+            UsageType.UNLOCKS_OPENS -> stringProvider.getString(R.string.app_opened_count, (appUsage?.timesOpened ?: 0))
+            UsageType.NOTIFICATIONS -> stringProvider.getString(R.string.app_notifications_count, (appUsage?.notificationsReceived ?: 0))
             null -> ""
         }
     }

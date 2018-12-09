@@ -10,10 +10,10 @@ import org.threeten.bp.LocalTime
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
 
-val UsageStats.appLaunchCount: Int
+val UsageStats.appOpenedCount: Int
     get() = try {
-        val appLaunchCountField = this::class.java.getDeclaredField("mAppLaunchCount")
-        appLaunchCountField.getInt(this)
+        val appLaunchCountMethod = this::class.java.getMethod("getAppLaunchCount")
+        appLaunchCountMethod.invoke(this) as Int
     } catch (exception: Exception) {
         0
     }
