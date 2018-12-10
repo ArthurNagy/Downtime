@@ -21,12 +21,7 @@ import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.listener.PieRadarChartTouchListener
 import com.github.mikephil.charting.renderer.PieChartRenderer
 import com.github.mikephil.charting.utils.ViewPortHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import me.arthurnagy.downtime.R
 import me.arthurnagy.downtime.core.AppUsage
 import me.arthurnagy.downtime.core.formatToDuration
@@ -144,6 +139,13 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
 
     private class OverviewChartRenderer(pieChart: PieChart, chartAnimator: ChartAnimator, viewPortHandler: ViewPortHandler) :
         PieChartRenderer(pieChart, chartAnimator, viewPortHandler) {
+
+        override fun drawEntryLabel(c: Canvas, label: String, x: Float, y: Float) {
+            val appNameLabel = if (label.contains(' ')) {
+                label.replace(" ", "\n")
+            } else label
+            super.drawEntryLabel(c, appNameLabel, x, y)
+        }
 
         override fun drawValue(c: Canvas?, formatter: IValueFormatter?, value: Float, entry: Entry?, dataSetIndex: Int, x: Float, y: Float, color: Int) = Unit
     }

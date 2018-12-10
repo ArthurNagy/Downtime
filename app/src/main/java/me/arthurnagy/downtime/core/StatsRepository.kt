@@ -3,17 +3,16 @@ package me.arthurnagy.downtime.core
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.pm.PackageManager
-import me.arthurnagy.downtime.BuildConfig
-import org.threeten.bp.LocalDateTime
-import org.threeten.bp.temporal.ChronoUnit
+import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalTime
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class StatsRepository(private val usageStatsManager: UsageStatsManager, private val packageManager: PackageManager) {
 
-    private val todayDateTime: LocalDateTime by lazy { LocalDateTime.now() }
-    private val startTimeToday: Long by lazy { todayDateTime.truncatedTo(ChronoUnit.DAYS).toUtcMillis() }
-    private val endTimeToday: Long by lazy { todayDateTime.plusDays(1).truncatedTo(ChronoUnit.DAYS).toUtcMillis() }
+    private val startTimeToday: Long by lazy { LocalTime.MIDNIGHT.atDate(LocalDate.now()).toUtcMillis() }
+    private val endTimeToday: Long by lazy { LocalTime.MIDNIGHT.atDate(LocalDate.now()).plusDays(1).toUtcMillis() }
+
 
     suspend fun getTodaysUnlockCount() = suspendCoroutine<Int> { continuation ->
         val count = usageStatsManager.queryEvents(startTimeToday, endTimeToday)
@@ -35,8 +34,10 @@ class StatsRepository(private val usageStatsManager: UsageStatsManager, private 
 
     suspend fun getTodaysAppUsage() = suspendCoroutine<List<AppUsage>> { continuation ->
         val appUsageList = usageStatsManager.queryAndAggregateUsageStats(startTimeToday, endTimeToday)
-            .filter { !isThisApp(it.key) && !isExcludedSystemApp(it.key) && it.value.lastTimeUsed > startTimeToday && packageManager.isAppInstalled(it.key) }
+            .asSequence()
+            .filter { /*!isThisApp(it.key) &&*/ !isExcludedSystemApp(it.key) && it.value.lastTimeUsed > startTimeToday && packageManager.isAppInstalled(it.key) }
             .map(::transformUsageStatsToAppUsage)
+            .toList()
         continuation.resume(appUsageList)
     }
 
@@ -62,7 +63,7 @@ class StatsRepository(private val usageStatsManager: UsageStatsManager, private 
         false
     }
 
-    private fun isThisApp(packageName: String) = packageName.contains(BuildConfig.APPLICATION_ID)
+//    private fun isThisApp(packageName: String) = packageName.contains(BuildConfig.APPLICATION_ID)
 
     private fun isExcludedSystemApp(packageName: String) = packageName.contains("launcher") || packageName.contains("systemui")
 
