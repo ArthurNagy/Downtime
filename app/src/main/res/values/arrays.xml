@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="usage_types">
+        <item>@string/usage_screen_time</item>
+        <item>@string/usage_times_opened</item>
+        <item>@string/usage_notifications_received</item>
+    </string-array>
+
+</resources>

@@ -1,5 +1,6 @@
 package me.arthurnagy.downtime.feature.overview
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.launch
@@ -27,6 +28,7 @@ class OverviewViewModel(dispatchers: AppDispatchers, private val statsRepository
     val notifications: LiveData<String> get() = _notifications
 
     fun load() {
+        Log.d("LOFASZ", "OverviewViewModel:init")
         launch {
             _unlocks.value = withContext(dispatchers.io) { statsRepository.getTodaysUnlockCount().toString() }
             _notifications.value = withContext(dispatchers.io) { statsRepository.getTodaysNotificationCount().toString() }

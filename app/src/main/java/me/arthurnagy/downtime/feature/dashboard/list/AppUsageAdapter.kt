@@ -2,55 +2,67 @@ package me.arthurnagy.downtime.feature.dashboard.list
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.AsyncDifferConfig
+import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import me.arthurnagy.downtime.AppUsageBinding
 import me.arthurnagy.downtime.core.AppUsage
 import me.arthurnagy.downtime.feature.shared.StringProvider
 import me.arthurnagy.downtime.feature.shared.UsageType
 
-class AppUsageAdapter : ListAdapter<AppUsage, AppUsageAdapter.AppUsageViewHolder>(diffItemCallback) {
+class AppUsageAdapter(private val stringProvider: StringProvider) : RecyclerView.Adapter<AppUsageAdapter.AppUsageViewHolder>() {
+
+    private val appUsageListUpdateCallback = AppUsageListUpdateCallback(this)
+    private val asyncListDiffer =
+        AsyncListDiffer<AppUiModel>(appUsageListUpdateCallback, AsyncDifferConfig.Builder<AppUiModel>(diffItemCallback).build()).apply { submitList(listOf()) }
 
     private var usageType: UsageType = UsageType.SOT
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppUsageViewHolder = AppUsageViewHolder.create(parent)
 
-    override fun onBindViewHolder(holder: AppUsageViewHolder, position: Int) = holder.bind(usageType, getItem(position))
+    override fun onBindViewHolder(holder: AppUsageViewHolder, position: Int) {
+        holder.binding.app = asyncListDiffer.currentList[position]
+        holder.binding.executePendingBindings()
+    }
 
+    override fun onBindViewHolder(holder: AppUsageViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isNotEmpty() && payloads.contains(UsageLabelPayload)) {
+            holder.binding.usageValue.text = asyncListDiffer.currentList[position].usageLabel
+        } else {
+            onBindViewHolder(holder, position)
+        }
+    }
+
+    override fun getItemCount(): Int = asyncListDiffer.currentList.size
 
     fun submitData(usageType: UsageType, apps: List<AppUsage>) {
         this.usageType = usageType
-        submitList(apps)
+        asyncListDiffer.submitList(apps.map { AppUiModel(usageType, it, stringProvider) })
     }
 
-    class AppUsageViewHolder(private val binding: AppUsageBinding, stringProvider: StringProvider) : RecyclerView.ViewHolder(binding.root) {
+    fun setOnUpdateFinishedCallback(updateFinishedCallback: OnUpdateFinished) = appUsageListUpdateCallback.setUpdateFinishedCallback(updateFinishedCallback)
 
-        private val appUiModel = AppUiModel(stringProvider)
-
-        init {
-            binding.app = appUiModel
-        }
-
-        fun bind(usageType: UsageType, appUsage: AppUsage) {
-            appUiModel.appUsage.set(appUsage)
-            appUiModel.usageType.set(usageType)
-            binding.executePendingBindings()
-        }
+    class AppUsageViewHolder(val binding: AppUsageBinding) : RecyclerView.ViewHolder(binding.root) {
 
         companion object {
-            fun create(parent: ViewGroup) =
-                AppUsageViewHolder(AppUsageBinding.inflate(LayoutInflater.from(parent.context), parent, false), StringProvider(parent.context))
+            fun create(parent: ViewGroup) = AppUsageViewHolder(AppUsageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
         }
 
     }
 
     companion object {
-        private val diffItemCallback = object : DiffUtil.ItemCallback<AppUsage>() {
-            override fun areItemsTheSame(oldItem: AppUsage, newItem: AppUsage): Boolean = oldItem.packageName == newItem.packageName
 
-            override fun areContentsTheSame(oldItem: AppUsage, newItem: AppUsage): Boolean = oldItem == newItem
+        private object UsageLabelPayload
 
+        private val diffItemCallback = object : DiffUtil.ItemCallback<AppUiModel>() {
+            override fun areItemsTheSame(oldItem: AppUiModel, newItem: AppUiModel): Boolean = oldItem.appUsage.packageName == newItem.appUsage.packageName
+
+            override fun areContentsTheSame(oldItem: AppUiModel, newItem: AppUiModel): Boolean = oldItem == newItem
+
+            override fun getChangePayload(oldItem: AppUiModel, newItem: AppUiModel): Any? = if (newItem.usageLabel != oldItem.usageLabel) {
+                UsageLabelPayload
+            } else null
         }
     }
 

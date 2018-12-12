@@ -5,8 +5,8 @@ import androidx.annotation.StringRes
 
 class StringProvider(private val context: Context) {
 
-    fun getString(@StringRes stringResource: Int) = context.getString(stringResource)
+    fun getString(@StringRes stringResource: Int): String = context.getString(stringResource)
 
-    fun getString(@StringRes stringResource: Int, vararg arguments: Any) = context.getString(stringResource, *arguments)
+    fun getString(@StringRes stringResource: Int, vararg arguments: Any): String = context.getString(stringResource, *arguments)
 
 }

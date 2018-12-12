@@ -1,5 +1,6 @@
 package me.arthurnagy.downtime.feature.dashboard
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.launch
@@ -12,8 +13,11 @@ import me.arthurnagy.downtime.feature.shared.DowntimeViewModel
 import me.arthurnagy.downtime.feature.shared.Event
 import me.arthurnagy.downtime.feature.shared.UsageType
 
-class DashboardViewModel(var usageType: UsageType, appDispatchers: AppDispatchers, private val statsRepository: StatsRepository) :
+class DashboardViewModel(usageType: UsageType, appDispatchers: AppDispatchers, private val statsRepository: StatsRepository) :
     DowntimeViewModel(appDispatchers) {
+
+    var usageType: UsageType = usageType
+        private set
 
     private val _event = MutableLiveData<Event<OverviewViewModel.Overview>>()
     val event: LiveData<Event<OverviewViewModel.Overview>> get() = _event
@@ -22,17 +26,22 @@ class DashboardViewModel(var usageType: UsageType, appDispatchers: AppDispatcher
     val apps: LiveData<List<AppUsage>> get() = _apps
 
     init {
+        Log.d("LOFASZ", "DashboardViewModel: init")
         launch {
-            val appUsageList = withContext(appDispatchers.computation) { statsRepository.getTodaysAppUsage() }
-            _apps.value = withContext(appDispatchers.computation) {
-                appUsageList.sortedByDescending {
-                    when (usageType) {
-                        UsageType.SOT -> it.screenTime
-                        UsageType.UNLOCKS_OPENS -> it.timesOpened.toLong()
-                        UsageType.NOTIFICATIONS -> it.notificationsReceived.toLong()
-                    }
-                }
-            }
+            _apps.value = withContext(appDispatchers.computation) { sortAppUsage(usageType, statsRepository.getTodaysAppUsage()) }
+        }
+    }
+
+    fun updateUsageType(usageType: UsageType) {
+        this.usageType = usageType
+        _apps.value = sortAppUsage(usageType, _apps.value)
+    }
+
+    private fun sortAppUsage(usageType: UsageType, appUsageList: List<AppUsage>?): List<AppUsage>? = appUsageList?.sortedByDescending {
+        when (usageType) {
+            UsageType.SOT -> it.screenTime
+            UsageType.UNLOCKS_OPENS -> it.timesOpened.toLong()
+            UsageType.NOTIFICATIONS -> it.notificationsReceived.toLong()
         }
     }
 

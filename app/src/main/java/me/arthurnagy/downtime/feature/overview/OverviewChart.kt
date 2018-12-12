@@ -141,10 +141,10 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
         PieChartRenderer(pieChart, chartAnimator, viewPortHandler) {
 
         override fun drawEntryLabel(c: Canvas, label: String, x: Float, y: Float) {
-            val appNameLabel = if (label.contains(' ')) {
-                label.replace(" ", "\n")
+            val appLabel = if (label.length > LABEL_LENGTH_LIMIT) {
+                "${label.take(LABEL_LENGTH_LIMIT)}..."
             } else label
-            super.drawEntryLabel(c, appNameLabel, x, y)
+            super.drawEntryLabel(c, appLabel, x, y)
         }
 
         override fun drawValue(c: Canvas?, formatter: IValueFormatter?, value: Float, entry: Entry?, dataSetIndex: Int, x: Float, y: Float, color: Int) = Unit
@@ -186,6 +186,7 @@ class OverviewChart @JvmOverloads constructor(context: Context, attrs: Attribute
     companion object {
         private const val FIVE_PERCENT = 5F
         private const val MAX_CHART_ENTRIES = 10
+        private const val LABEL_LENGTH_LIMIT = 10
         private const val TOTAL_RADIUS_PERCENT = 100F
         private const val HOLE_INSIDE_PERCENT = 25F
         private val MATERIAL_COLORS = intArrayOf(

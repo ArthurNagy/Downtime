@@ -3,8 +3,12 @@
     <dimen name="first_keyline">16dp</dimen>
     <dimen name="second_keyline">24dp</dimen>
     <dimen name="third_keyline">72dp</dimen>
+
+    <dimen name="text_padding">4dp</dimen>
     <dimen name="content_padding">8dp</dimen>
+
     <dimen name="min_touch_target">48dp</dimen>
+
     <dimen name="chart_offset">40dp</dimen>
     <dimen name="list_icon_size">36dp</dimen>
     <dimen name="icon_margin">20dp</dimen>
