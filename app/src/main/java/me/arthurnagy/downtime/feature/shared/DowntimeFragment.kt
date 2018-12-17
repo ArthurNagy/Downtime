@@ -7,9 +7,11 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.NavigationUI
+import androidx.navigation.Navigation
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
 import me.arthurnagy.downtime.BR
+import me.arthurnagy.downtime.R
 
 abstract class DowntimeFragment<VB : ViewDataBinding, VM : DowntimeViewModel> : Fragment() {
 
@@ -19,7 +21,6 @@ abstract class DowntimeFragment<VB : ViewDataBinding, VM : DowntimeViewModel> : 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding.setLifecycleOwner(viewLifecycleOwner)
         binding.setVariable(BR.viewModel, viewModel)
-        NavigationUI.setupWithNavController(provideToolbar(), findNavController())
         onCreateView()
         return binding.root
     }
@@ -30,7 +31,10 @@ abstract class DowntimeFragment<VB : ViewDataBinding, VM : DowntimeViewModel> : 
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        val navController = Navigation.findNavController(requireAppCompatActivity(), R.id.nav_host)
+        val appBarConfiguration = AppBarConfiguration(navController.graph)
         requireAppCompatActivity().setSupportActionBar(provideToolbar())
+        requireAppCompatActivity().setupActionBarWithNavController(navController, appBarConfiguration)
     }
 
 }

@@ -3,6 +3,7 @@ package me.arthurnagy.downtime.feature.dashboard
 import android.view.View
 import android.widget.AdapterView
 import androidx.appcompat.widget.Toolbar
+import androidx.navigation.fragment.findNavController
 import me.arthurnagy.downtime.DashboardBinding
 import me.arthurnagy.downtime.R
 import me.arthurnagy.downtime.feature.dashboard.usage.filter.UsageSpinnerAdapter
@@ -28,6 +29,10 @@ class DashboardFragment : DowntimeFragment<DashboardBinding, DashboardViewModel>
                 viewModel.updateUsageType(adapter.getUsageType(position))
             }
 
+        }
+
+        binding.appUsageRecycler.setItemClickListener {
+            findNavController().navigate(DashboardFragmentDirections.actionDashboardFragmentToDetailFragment(viewModel.usageType, it.packageName))
         }
 
         viewModel.apps.observeNonNull(viewLifecycleOwner) {

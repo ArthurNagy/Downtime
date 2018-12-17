@@ -23,11 +23,16 @@ class AppUsageRecyclerView @JvmOverloads constructor(context: Context, attrs: At
             ContextCompat.getDrawable(context, R.drawable.list_divider)?.let { setDrawable(it) }
         })
         setAdapter(adapter)
-        adapter.setOnUpdateFinishedCallback {
-            smoothScrollToPosition(0)
-        }
+//        adapter.setOnUpdateFinishedCallback {
+//            smoothScrollToPosition(0)
+//        }
     }
 
     fun submitAppList(usageType: UsageType, apps: List<AppUsage>) = adapter.submitData(usageType, apps)
 
+    fun setItemClickListener(callback: (appUsage: AppUsage) -> Unit) {
+        adapter.setItemClickListener {
+            callback.invoke(adapter.getItem(it))
+        }
+    }
 }

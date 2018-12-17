@@ -14,6 +14,6 @@ class MainActivity : AppCompatActivity() {
         val binding = DataBindingUtil.setContentView<MainBinding>(this, R.layout.activity_main)
     }
 
-    override fun onSupportNavigateUp() = findNavController(R.id.nav_host).navigateUp()
+    override fun onSupportNavigateUp() = findNavController(R.id.nav_host).navigateUp() || super.onSupportNavigateUp()
 
 }

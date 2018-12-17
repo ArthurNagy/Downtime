@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import me.arthurnagy.downtime.AppUsageBinding
 import me.arthurnagy.downtime.core.AppUsage
+import me.arthurnagy.downtime.feature.shared.ItemClickListener
 import me.arthurnagy.downtime.feature.shared.StringProvider
 import me.arthurnagy.downtime.feature.shared.UsageType
 
@@ -16,10 +17,11 @@ class AppUsageAdapter(private val stringProvider: StringProvider) : RecyclerView
     private val appUsageListUpdateCallback = AppUsageListUpdateCallback(this)
     private val asyncListDiffer =
         AsyncListDiffer<AppUiModel>(appUsageListUpdateCallback, AsyncDifferConfig.Builder<AppUiModel>(diffItemCallback).build()).apply { submitList(listOf()) }
+    private var itemClickListener: ItemClickListener? = null
 
     private var usageType: UsageType = UsageType.SOT
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppUsageViewHolder = AppUsageViewHolder.create(parent)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppUsageViewHolder = AppUsageViewHolder.create(parent, itemClickListener)
 
     override fun onBindViewHolder(holder: AppUsageViewHolder, position: Int) {
         holder.binding.app = asyncListDiffer.currentList[position]
@@ -41,12 +43,23 @@ class AppUsageAdapter(private val stringProvider: StringProvider) : RecyclerView
         asyncListDiffer.submitList(apps.map { AppUiModel(usageType, it, stringProvider) })
     }
 
+    fun getItem(position: Int): AppUsage = asyncListDiffer.currentList[position].appUsage
+
     fun setOnUpdateFinishedCallback(updateFinishedCallback: OnUpdateFinished) = appUsageListUpdateCallback.setUpdateFinishedCallback(updateFinishedCallback)
+
+    fun setItemClickListener(itemClickListener: ItemClickListener) {
+        this.itemClickListener = itemClickListener
+    }
 
     class AppUsageViewHolder(val binding: AppUsageBinding) : RecyclerView.ViewHolder(binding.root) {
 
         companion object {
-            fun create(parent: ViewGroup) = AppUsageViewHolder(AppUsageBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+            fun create(parent: ViewGroup, itemClickListener: ItemClickListener?) =
+                AppUsageViewHolder(AppUsageBinding.inflate(LayoutInflater.from(parent.context), parent, false)).apply {
+                    binding.root.setOnClickListener {
+                        itemClickListener?.invoke(this.adapterPosition)
+                    }
+                }
         }
 
     }
