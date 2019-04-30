@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: "androidx.navigation.safeargs"
+apply plugin: "androidx.navigation.safeargs.kotlin"
 
 android {
     compileSdkVersion 28
@@ -40,11 +40,10 @@ androidExtensions {
 }
 
 ext {
-    lifecycle = '2.0.0'
-    room_version = '2.1.0-alpha03'
-    koin = "1.0.2"
+    lifecycle = '2.1.0-alpha04'
+    room_version = '2.1.0-alpha07'
+    koin = '2.0.0-rc-2'
     coroutines = '1.0.1'
-    glide = '4.8.0'
 }
 
 dependencies {
@@ -54,10 +53,10 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines"
 
     // Support Libraries
-    implementation "androidx.appcompat:appcompat:1.0.2"
-    implementation "androidx.core:core-ktx:1.0.1"
-    implementation "com.google.android.material:material:1.1.0-alpha02"
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
+    implementation 'androidx.appcompat:appcompat:1.1.0-alpha04'
+    implementation 'androidx.core:core-ktx:1.1.0-alpha05'
+    implementation "com.google.android.material:material:1.1.0-alpha05"
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha4'
 
     // Architecture components
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle"
@@ -68,10 +67,8 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
 
     // Navigation Arch Component
-    implementation "android.arch.navigation:navigation-fragment:$navigation_arch"
-    implementation "android.arch.navigation:navigation-fragment-ktx:$navigation_arch"
-    implementation "android.arch.navigation:navigation-ui:$navigation_arch"
-    implementation "android.arch.navigation:navigation-ui-ktx:$navigation_arch"
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
 
     // Koin
     implementation "org.koin:koin-core:$koin"
@@ -82,10 +79,7 @@ dependencies {
 
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0-alpha'
 
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.1.1'
-
-//    implementation "com.github.bumptech.glide:glide:$glide"
-//    kapt "com.github.bumptech.glide:compiler:$glide"
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.1'

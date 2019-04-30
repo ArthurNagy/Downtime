@@ -5,7 +5,7 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.pm.PackageManager
 import kotlinx.coroutines.Dispatchers
-import org.koin.dsl.module.module
+import org.koin.dsl.module
 
 @SuppressLint("WrongConstant")
 val appModule = module {
@@ -23,5 +23,4 @@ val appModule = module {
     factory { get<Context>().packageManager as PackageManager }
 
     single { StatsRepository(get(), get()) }
-
 }

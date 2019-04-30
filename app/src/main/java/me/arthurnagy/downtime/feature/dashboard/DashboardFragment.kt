@@ -16,7 +16,7 @@ import org.koin.core.parameter.parametersOf
 class DashboardFragment : DowntimeFragment<DashboardBinding, DashboardViewModel>() {
 
     override val binding: DashboardBinding by binding(R.layout.fragment_dashboard)
-    override val viewModel: DashboardViewModel by viewModel { parametersOf(DashboardFragmentArgs.fromBundle(arguments).usageType) }
+    override val viewModel: DashboardViewModel by viewModel { parametersOf(DashboardFragmentArgs.fromBundle(arguments!!).usageType) }
 
     override fun onCreateView() {
         val adapter = UsageSpinnerAdapter(requireContext())

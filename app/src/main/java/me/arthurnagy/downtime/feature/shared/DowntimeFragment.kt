@@ -19,7 +19,7 @@ abstract class DowntimeFragment<VB : ViewDataBinding, VM : DowntimeViewModel> : 
     abstract val viewModel: VM
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding.setLifecycleOwner(viewLifecycleOwner)
+        binding.lifecycleOwner = viewLifecycleOwner
         binding.setVariable(BR.viewModel, viewModel)
         onCreateView()
         return binding.root
