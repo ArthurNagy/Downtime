@@ -18,7 +18,7 @@ class DowntimeApp : Application() {
         startKoin {
             androidLogger()
             androidContext(this@DowntimeApp)
-            modules(appModule, overviewModule, dashboardModule, detailModule)
+            modules(appModule + overviewModule + dashboardModule + detailModule)
         }
     }
 
